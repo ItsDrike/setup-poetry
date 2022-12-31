@@ -1,0 +1,248 @@
+name: "Setup python and poetry"
+description: "Setup python, install poetry, install dependencies, cache."
+
+inputs:
+  python-version:
+    description: "The version of python to use (passed into `actions/setup-python` action)."
+    required: true
+
+  poetry-version:
+    description: "Poetry version to use (passed as `--version` argument to the official poetry install script)."
+    required: true
+    default: ""
+    # TODO: Check if this needs full version (1.3.1), or if it supports partial versions (1.3)
+
+  install-args:
+    description: "A string placed after the `poetry install` command, which can contain extra options."
+    required: true
+    default: ""
+
+  working-dir:
+    description: "The directory to run the `poetry` commands in. By default, this will just be the root directory of the project."
+    required: true
+    default: "."
+
+  cache-poetry-install:
+    description: "Enable caching for poetry tool itself (not related to caching of the project's poetry dependencies)."
+    required: true
+    default: "true"
+
+  cache-poetry-environemnt:
+    description: "Enable caching for poetry environments (venvs that contain the project's poetry dependencies)."
+    required: true
+    default: "true"
+
+  poetry-home:
+    description: "Directory to install the poetry tool into. (passed into the official poetry installer as `POETRY_HOME` env variable)."
+    required: true
+    default: "~/.local/share/pypoetry"
+
+  # TODO: venv in project, other poetry config options
+  # TODO: Handle dependencies cache manually, like with installation cache
+  # to allow restorations even if later user code fails
+
+outputs:
+  poetry-venv-path:
+    description: "Path to the virtual environment created by poetry for the project."
+    value: ${{ steps.poetry_environment.venv-path }}
+
+  python-version:
+    description: "The python version used (forwarded from `actions/setup-python` action)."
+    value: ${{ steps.python_setup.outputs.python-version }}
+
+  python-path:
+    description: "Path to the python interpreter (forwarded from `actions/setup-python` action)."
+    value: ${{ steps.python_setup.outputs.python-path }}
+
+  cache-hit-poetry-install:
+    description: "The was a cache hit for the poetry tool (installation) cache."
+    value: ${{ steps.poetry_installation_cache.cache-hit }}
+
+  cache-hit-poetry-environment:
+    description: "There was a cache hit for the poetry environment (dependencies) cache."
+    value: ${{ steps.poetry_dependencies_cache.cache-hit }}
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup python
+      uses: actions/setup-python@v4
+      id: python_setup
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Cache poetry installation
+      # We're using the cache restore only action, rather than full actions/cache, as we then explicitly
+      # save this cache later, to save installation cache even if the dependency install fails.
+      uses: actions/cache/restore@v3
+      if: ${{ success() && inputs.cache-poetry-install == 'true' }}
+      id: poetry_installation_cache
+      with:
+        path: |
+          ${{ inputs.poetry-home }}
+        key: "setup-poetry-v1.0.0--cache-installation--\
+              os-${{ runner.os }}--\
+              python-${{ steps.python_setup.outputs.python-version }}--\
+              poetry-${{ inputs.poetry-version }}"
+
+    - name: Install Poetry
+      shell: bash
+      # If cache was restored, the poetry install script will detect it, and will skip the installation
+      # no need to add an if condition for running this step.
+      run: |
+        echo "::group::Install Poetry (version: ${{ inputs.poetry-version }})"
+
+        if [ "${{ inputs.poetry-version }}" == "latest" ]; then
+          curl -sSL "https://install.python-poetry.org" | python 
+        else
+          curl -sSL "https://install.python-poetry.org" | python - --version "${{ inputs.poetry-version }}"
+        fi
+
+        echo "::endgroup::"
+      env:
+        POETRY_HOME: ${{ inputs.poetry-home }}
+
+    # Windows, in it's eternal glory, symlinks ${{ inputs.poetry-home }}/bin/poetry.exe to
+    # ${{ inputs.poetry-version }}/venv/Scripts/poetry.exe. This is fine and works without issues
+    # when poetry is installed without cache. However after a cache restore, this stops working,
+    # even though the symlink is present and points to the correct destination. Ending with code
+    # 127, and message:
+    #  D:\a\_temp\df65fdd4-e6e5-44b7-b05a-a7a312eae7ec.sh: line 16: 
+    #  /c/Users/runneradmin/.local/share/pypoetry/bin/poetry.exe: cannot execute: required file not found
+    #
+    # # To fix this, we dynamically obtain the destination of this link, and recreate it with that exact
+    # obtained destination. I don't know why it works, but it works...
+    #
+    # What I assume is going on is some mess up with cache restoration, as cache is stored in tar archives
+    # and it seems that the restored link is no longer working, however it shows up correctly in `ls`, and
+    # `readlink` works properly and is able to read it's destination, so I've no idea why this is needed.
+    # To fix this, we dynamically obtain the destination of this link, and recreate it with that exact
+    # obtained destination.
+    - name: Recreate symlink to poetry on windows
+      if: ${{ success() && runner.os == 'Windows' && steps.poetry_installation_cache.outputs.cache-hit == 'true' }}
+      shell: bash
+      run: |
+        echo "::group::Recreate symlink to poetry executable for windows"
+
+        poetry_link_path="${{ inputs.poetry-home }}/bin/poetry.exe"
+        poetry_link_path="${poetry_link_path/#\~/$HOME}"
+        echo "Link path: $poetry_link_path"
+
+        poetry_link_dest_path="$(readlink -f "$poetry_link_path")"
+        echo "Destination path: $poetry_link_dest_path"
+
+        # Use the -f flag to force symlink creation, even though it already exists
+        ln -sf "$poetry_link_dest_path" "$poetry_link_path"
+
+        echo "::endgroup::"
+
+    - name: Add poetry executable to $PATH
+      shell: bash
+      run: |
+        echo "::group::Add poetry executable(s) to PATH"
+        echo "test: ${{ steps.poetry_installation_cache.outputs.cache-hit }}"
+        echo "Path to poetry binaries: ${{ inputs.poetry-home }}/bin"
+        echo "${{ inputs.poetry-home }}/bin" >> $GITHUB_PATH
+        echo "::endgroup::"
+
+    - name: Test poetry installation
+      shell: bash
+      run: |
+        echo "::group::Test poetry installation"
+        poetry --version
+        echo "::endgroup::"
+
+
+    # Sometimes, poetry might get installed properly, while the dependency installation later fails.
+    # If this happens, poetry installation cache is also ignored, which is not what we want. There's
+    # no reason to throw away a completely working poetry installation here, so let's explicitly save
+    # it, no matter what happens later.
+    - name: Save poetry install cache early
+      if: ${{ success() && steps.poetry_installation_cache.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          ${{ inputs.poetry-home }}
+        key: ${{ steps.poetry_installation_cache.outputs.cache-primary-key }}
+
+    - name: Obtain poetry cache-dir
+      id: poetry_cache_dir
+      shell: bash
+      run: |
+        echo "::group::Obtain poetry cache-dir"
+        cache_dir="$(poetry config cache-dir)"
+        echo "Cache dir: $cache_dir"
+        echo "cache-dir=$cache_dir" >> $GITHUB_OUTPUT
+        echo "::endgroup::"
+
+    - name: Cache poetry dependencies
+      if: ${{ success() && inputs.cache-poetry-environment }}
+      uses: actions/cache@v3.2.0
+      id: poetry_dependencies_cache
+      with:
+        # Cache poetry cache-dir, where virtual environments get created by default.
+        # However in case we'd want the virtual environments created in-project, also cache the .venv folder
+        path: |
+          ${{ steps.poetry_cache_dir.outputs.cache-dir }}
+          ${{ inputs.working-dir }}/.venv
+        # If a cache key is the same, we can safely restore the cache knowing that it was the cache for this version.
+        #
+        # Otherwise, if we don't have any stored cache matching the exact cache key, it usually means that a new
+        # dependency was added, updated or removed.
+        #
+        # For these cases, we can actually still perform a cache restore, even if the key doesn't match, as long as
+        # that cache comes from a compatible version (ensured by a match on a restore-key). That way, poetry will just
+        # have to install the missing packages, or update/remove some packages, but all other dependencies will still 
+        # be cached.
+        #
+        # After that, new cache will still get created, with an appropriate restore key, so next time when this same
+        # config runs, we can have an exact match.
+        #
+        # See: https://github.com/actions/cache/blob/main/tips-and-workarounds.md#update-a-cache
+        key: "setup-poetry-v1.0.0--cache-dependencies--\
+              os-${{ runner.os }}--\
+              python-${{ steps.python_setup.outputs.python-version }}--\
+              poetry-${{ inputs.poetry-version }}--\
+              args-${{ inputs.install-args }}--\
+              workdir-${{ inputs.working-dir }}--\
+              filehash-${{ hashFiles(format('{0}/pyproject.toml', inputs.working_dir), format('{0}/poetry.lock', inputs.working_dir)) }}"
+        restore-keys: "setup-poetry-v1.0.0--cache-dependencies--\
+                        os-${{ runner.os }}--\
+                        python-${{ steps.python_setup.outputs.python-version }}--\
+                        poetry-${{ inputs.poetry-version }}--\
+                        args-${{ inputs.install-args }}--\
+                        workdir-${{ inputs.working-dir }}--"
+
+    - name: Create poetry environment for the project
+      id: poetry_environment
+      shell: bash
+      run: |
+        echo "::group::Poetry environment"
+        cd ${{ inputs.working-dir }}
+        echo "Python path: ${{ steps.python_setup.outputs.python-path }}"
+        poetry env use "${{ steps.python_setup.outputs.python-path }}"
+        echo "venv-path=$(poetry env info --path)" >> $GITHUB_OUTPUT
+        echo "::endgroup::"
+
+    - name: Install dependencies with poetry
+      shell: bash
+      run: |
+        echo "::group::Install Dependencies"
+        cd ${{ inputs.working-dir }}
+        poetry install ${{ inputs.install-args }}
+        echo "::endgroup::"
+
+    - name: Add poetry venv binaries to path
+      shell: bash
+      run: |
+        echo "::group::Add venv to PATH"
+        cd ${{ inputs.working-dir }}
+        echo ""
+        echo "Adding $(poetry env info --path)/bin to path"
+        cd ${{ inputs.working-dir }}
+        echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
+        echo "::endgroup::"
