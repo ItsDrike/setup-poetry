@@ -32,6 +32,9 @@ steps:
         poetry-version: '1.3.1'
 ```
 
+NOTE: When using windows, you'll need to be using the bash shell when using the `poetry` command, due to windows not
+liking unix paths in $PATH. This is something that is being worked on, and should eventually get fixed.
+
 ### Inputs
 
 The following inputs can be passed to
