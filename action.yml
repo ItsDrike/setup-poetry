@@ -106,6 +106,15 @@ runs:
       env:
         POETRY_HOME: ${{ inputs.poetry-home }}
 
+    - name: Debug - print some setting values
+      shell: bash
+      run: |
+        echo "::group::Debug show settings"
+        echo "runner.os: '${{ runner.os }}'"
+        echo "poetry installation cache hit: '${{ steps.poetry_installation_cache.outputs.cache-hit }}'"
+        echo "poetry installation cache key: ${{ steps.poetry_installation_cache.outputs.cache-matched-key }}"
+        echo "::endgroup::"
+
     # Windows, in it's eternal glory, symlinks ${{ inputs.poetry-home }}/bin/poetry.exe to
     # ${{ inputs.poetry-version }}/venv/Scripts/poetry.exe. This is fine and works without issues
     # when poetry is installed without cache. However after a cache restore, this stops working,
