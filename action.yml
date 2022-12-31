@@ -79,7 +79,7 @@ runs:
       # We're using the cache restore only action, rather than full actions/cache, as we then explicitly
       # save this cache later, to save installation cache even if the dependency install fails.
       uses: actions/cache/restore@v3
-      if: ${{ success() && inputs.cache-poetry-install == 'true' }}
+      if: ${{ inputs.cache-poetry-install == 'true' }}
       id: poetry_installation_cache
       with:
         path: |
@@ -123,7 +123,7 @@ runs:
     # To fix this, we dynamically obtain the destination of this link, and recreate it with that exact
     # obtained destination.
     - name: Recreate symlink to poetry on windows
-      if: ${{ success() && runner.os == 'Windows' && steps.poetry_installation_cache.outputs.cache-hit == 'true' }}
+      if: ${{ runner.os == 'Windows' && steps.poetry_installation_cache.outputs.cache-hit == 'true' }}
       shell: bash
       run: |
         echo "::group::Recreate symlink to poetry executable for windows"
@@ -162,7 +162,7 @@ runs:
     # no reason to throw away a completely working poetry installation here, so let's explicitly save
     # it, no matter what happens later.
     - name: Save poetry install cache early
-      if: ${{ success() && steps.poetry_installation_cache.outputs.cache-hit != 'true' }}
+      if: ${{ steps.poetry_installation_cache.outputs.cache-hit != 'true' }}
       uses: actions/cache/save@v3
       with:
         path: |
@@ -180,7 +180,7 @@ runs:
         echo "::endgroup::"
 
     - name: Cache poetry dependencies
-      if: ${{ success() && inputs.cache-poetry-environment }}
+      if: ${{ inputs.cache-poetry-environment }}
       uses: actions/cache@v3
       id: poetry_dependencies_cache
       with:
