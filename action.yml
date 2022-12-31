@@ -181,7 +181,7 @@ runs:
 
     - name: Cache poetry dependencies
       if: ${{ success() && inputs.cache-poetry-environment }}
-      uses: actions/cache@v3.2.0
+      uses: actions/cache@v3
       id: poetry_dependencies_cache
       with:
         # Cache poetry cache-dir, where virtual environments get created by default.
