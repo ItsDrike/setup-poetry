@@ -27,7 +27,7 @@ The following inputs can be passed to
 | Name                     | Type   | Default                   | Description                                                                                                           |
 |--------------------------|--------|---------------------------|-----------------------------------------------------------------------------------------------------------------------|
 | python-version           | string |                           | The version of python to use (passed into `actions/setup-python` action).                                             |
-| poetry_version           | string |                           | Poetry version to use (passed as `--version` argument to the [official poetry install script][poetry-installer-docs]. |
+| poetry-version           | string |                           | Poetry version to use (passed as `--version` argument to the [official poetry install script][poetry-installer-docs]. |
 | install-args             | string |                           | A string placed after the `poetry install` command, which can contain extra options.                                  |
 | working-dir              | path   | `.`                       | The directory to run the `poetry` commands in. By default, this will just be the root directory of the project.       |
 | cache-poetry-install     | bool   | true                      | Enable caching for poetry tool itself (not related to caching of the project's poetry dependencies).                  |
