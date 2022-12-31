@@ -4,8 +4,8 @@ This is a composite action which handles installing python and poetry tool, usin
 poetry dependencies.
 
 The main goal of this action is to **quickly** handle installing of the project's dependencies, by effectively
-utilizing caching. While there are some other actions with the same goal, we prioritize speed as one of the most
-important things, and so this action mainly focuses on handling this installation as quickly as possible.
+utilizing caching. While there are some other actions with the same goal, most of them don't have good (if any)
+cross-platform support, and don't focus as much on speed.
 
 ## Usage
 
