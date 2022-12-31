@@ -209,7 +209,7 @@ runs:
               poetry-${{ inputs.poetry-version }}--\
               args-${{ inputs.install-args }}--\
               workdir-${{ inputs.working-dir }}--\
-              filehash-${{ hashFiles(format('{0}/pyproject.toml', inputs.working_dir), format('{0}/poetry.lock', inputs.working_dir)) }}"
+              filehash-${{ hashFiles(format('{0}/pyproject.toml', inputs.working-dir), format('{0}/poetry.lock', inputs.working-dir)) }}"
         restore-keys: "setup-poetry-v1.0.0--cache-dependencies--\
                         os-${{ runner.os }}--\
                         python-${{ steps.python_setup.outputs.python-version }}--\
