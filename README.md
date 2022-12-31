@@ -17,8 +17,9 @@ You can use this action as follows:
 - name: Install Python Dependencies
   uses: ItsDrike/setup-poetry@v1
   with:
-    install_args: "--without dev"
-    python_version: '3.10'
+    install-args: "--without dev"
+    python-version: '3.10'
+    poetry-version: '1.3.1'
 ```
 
 ### Inputs
