@@ -142,6 +142,15 @@ runs:
         poetry_link_dest_path="$(readlink -f "$poetry_link_path")"
         echo "Destination path: $poetry_link_dest_path"
 
+        if [ "$poetry_link_path" = "$poetry_link_dest_path" ]; then
+          echo "Same paths?"
+          ls -la "$poetry_link_path"
+          ls -la ${{ inputs.poetry-home }}
+          ls -la ${{ inputs.poetry-home }}/bin
+          ls -la ${{ inputs.poetry-home }}/venv
+          ls -la ${{ inputs.poetry-home }}/venv/Scripts
+        fi
+
         # Use the -f flag to force symlink creation, even though it already exists
         ln -sf "$poetry_link_dest_path" "$poetry_link_path"
 
