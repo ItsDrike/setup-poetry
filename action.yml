@@ -123,7 +123,8 @@ runs:
     # To fix this, we dynamically obtain the destination of this link, and recreate it with that exact
     # obtained destination.
     - name: Recreate symlink to poetry on windows
-      if: ${{ runner.os == 'Windows' && steps.poetry_installation_cache.outputs.cache-hit == 'true' }}
+      # Only run on windows, if we matched some cache key
+      if: ${{ runner.os == 'Windows' && steps.poetry_installation_cache.outputs.cache-matched-key != '' }}
       shell: bash
       run: |
         echo "::group::Recreate symlink to poetry executable for windows"
