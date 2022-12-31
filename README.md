@@ -7,8 +7,8 @@ The main goal of this action is to **quickly** handle installing of the project'
 utilizing caching. While there are some other actions with the same goal, most of them don't have good (if any)
 cross-platform support, and don't focus as much on speed.
 
-NOTE: Windows support may be a bit flaky due to some issues with cache not properly restoring symlinks. This is
-actively being worked on, please be patient.
+NOTE: Windows support may be a bit flaky due to some custom complex logic to allow it's caching. If you do see bugs,
+please report them.
 
 ## Usage
 
