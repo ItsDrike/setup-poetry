@@ -1,4 +1,4 @@
-name: "Setup python and poetry"
+name: "Setup poetry"
 description: "Setup python, install poetry, install dependencies, cache."
 
 inputs:
