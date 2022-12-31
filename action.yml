@@ -142,17 +142,23 @@ runs:
         poetry_link_dest_path="$(readlink -f "$poetry_link_path")"
         echo "Destination path: $poetry_link_dest_path"
 
+        # Sometimes, the file that's supposed to be a link, apparently isn't a link, and is instead an
+        # actual file...
+        #
+        # To handle that, we explicitly remove it and create a link pointing to poetry.exe in the proper place.
         if [ "$poetry_link_path" = "$poetry_link_dest_path" ]; then
-          echo "Same paths?"
-          ls -la "$poetry_link_path"
-          ls -la ${{ inputs.poetry-home }}
-          ls -la ${{ inputs.poetry-home }}/bin
-          ls -la ${{ inputs.poetry-home }}/venv
-          ls -la ${{ inputs.poetry-home }}/venv/Scripts
-        fi
+          echo "Poetry executable not a link, replacing with one"
 
-        # Use the -f flag to force symlink creation, even though it already exists
-        ln -sf "$poetry_link_dest_path" "$poetry_link_path"
+          poetry_link_dest_path="${{ inputs.poetry-home }}/venv/Scripts/poetry.exe"
+          poetry_link_dest_path="${poetry_link_dest_path/#\~/$HOME}"
+          echo "New destination path: $poetry_link_dest_path"
+
+          rm "$poetry_link_path"
+          ln -s "$poetry_link_dest_path" "$poetry_link_path"
+        else
+          # Use the -f flag to force symlink creation, even though it already exists
+          ln -sf "$poetry_link_dest_path" "$poetry_link_path"
+        fi
 
         echo "::endgroup::"
 
