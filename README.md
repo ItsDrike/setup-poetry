@@ -17,12 +17,19 @@ please report them.
 You can use this action as follows:
 
 ```yaml
-- name: Install Python Dependencies
-  uses: ItsDrike/setup-poetry@v1
-  with:
-    install-args: "--without dev"
-    python-version: '3.10'
-    poetry-version: '1.3.1'
+steps:
+    # A checkout step is necessary, so that we have a poetry repository to work with
+    # (you can also use any other means of clonning the repo, including manually creating
+    # pyproject.toml and poetry.lock files if needed)
+    - name: Checkout the repository
+    uses: actions/checkout@v3
+
+    - name: Install Python Dependencies
+    uses: ItsDrike/setup-poetry@v1
+    with:
+        install-args: "--without dev"
+        python-version: '3.10'
+        poetry-version: '1.3.1'
 ```
 
 ### Inputs
