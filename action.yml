@@ -112,28 +112,32 @@ runs:
         echo "poetry installation cache key: ${{ steps.poetry_installation_cache.outputs.cache-matched-key }}"
         echo "::endgroup::"
 
-    # Windows, in it's eternal glory, symlinks ${{ inputs.poetry-home }}/bin/poetry.exe to
-    # ${{ inputs.poetry-version }}/venv/Scripts/poetry.exe. This is fine and works without issues
-    # when poetry is installed without cache. However after a cache restore, this stops working,
-    # even though the symlink is present and points to the correct destination. Ending with code
-    # 127, and message:
-    #  D:\a\_temp\df65fdd4-e6e5-44b7-b05a-a7a312eae7ec.sh: line 16: 
-    #  /c/Users/runneradmin/.local/share/pypoetry/bin/poetry.exe: cannot execute: required file not found
+    # Windows is just a big pile of bugs...
     #
-    # # To fix this, we dynamically obtain the destination of this link, and recreate it with that exact
-    # obtained destination. I don't know why it works, but it works...
+    # Poetry installation in windows symlinks ${{ inputs.poetry-home }}/bin/poetry.exe to 
+    # {{ inputs.poetry-version }}/venv/Scripts/poetry.exe, however in some cases, this just deosn't work properly
+    # after a cache restore.
+    #
+    # Sometimes, the symlink seems to be present and point to the correct destination, however it actually doesn't work
+    # and invoking poetry results in code 127 and message: D:\a\_temp\df65fdd4-e6e5-44b7-b05a-a7a312eae7ec.sh: line 16:
+    #  /c/Users/runneradmin/.local/share/pypoetry/bin/poetry.exe: cannot execute: required file not found
+    # This can be fixed by recreating the symlink, even though it has the exact same destination, it just magically starts
+    # working for some reason.
+    #
+    # Other times, the file isn't even a symlink and is instead a full file, which however doesn't actually work, and
+    # needs to be removed and replaced with a valid symlink.
     #
     # What I assume is going on is some mess up with cache restoration, as cache is stored in tar archives
     # and it seems that the restored link is no longer working, however it shows up correctly in `ls`, and
     # `readlink` works properly and is able to read it's destination, so I've no idea why this is needed.
     # To fix this, we dynamically obtain the destination of this link, and recreate it with that exact
     # obtained destination.
-    - name: Recreate symlink to poetry on windows
+    - name: Fix symlinks for poetry executable on windows
       # Only run on windows, if we matched some cache key
       if: ${{ runner.os == 'Windows' && steps.poetry_installation_cache.outputs.cache-matched-key != '' }}
       shell: bash
       run: |
-        echo "::group::Recreate symlink to poetry executable for windows"
+        echo "::group::Fix symlinks for poetry executable on windows"
 
         poetry_link_path="${{ inputs.poetry-home }}/bin/poetry.exe"
         poetry_link_path="${poetry_link_path/#\~/$HOME}"
@@ -142,10 +146,6 @@ runs:
         poetry_link_dest_path="$(readlink -f "$poetry_link_path")"
         echo "Destination path: $poetry_link_dest_path"
 
-        # Sometimes, the file that's supposed to be a link, apparently isn't a link, and is instead an
-        # actual file...
-        #
-        # To handle that, we explicitly remove it and create a link pointing to poetry.exe in the proper place.
         if [ "$poetry_link_path" = "$poetry_link_dest_path" ]; then
           echo "Poetry executable not a link, replacing with one"
 
@@ -156,6 +156,7 @@ runs:
           rm "$poetry_link_path"
           ln -s "$poetry_link_dest_path" "$poetry_link_path"
         else
+          echo "Poetry executable is a link, recreating because windows requires it"
           # Use the -f flag to force symlink creation, even though it already exists
           ln -sf "$poetry_link_dest_path" "$poetry_link_path"
         fi
