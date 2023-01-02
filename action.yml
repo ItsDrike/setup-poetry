@@ -169,7 +169,6 @@ runs:
         poetry --version
         echo "::endgroup::"
 
-
     # Sometimes, poetry might get installed properly, while the dependency installation later fails.
     # If this happens, poetry installation cache is also ignored, which is not what we want. There's
     # no reason to throw away a completely working poetry installation here, so let's explicitly save
