@@ -94,9 +94,9 @@ runs:
         echo "::group::Install Poetry (version: ${{ inputs.poetry-version }})"
 
         if [ "${{ inputs.poetry-version }}" == "latest" ]; then
-          curl -sSL "https://install.python-poetry.org" | python 
+          curl -sSL "https://install.python-poetry.org" | python - --yes
         else
-          curl -sSL "https://install.python-poetry.org" | python - --version "${{ inputs.poetry-version }}"
+          curl -sSL "https://install.python-poetry.org" | python - --yes --version "${{ inputs.poetry-version }}"
         fi
 
         echo "::endgroup::"
