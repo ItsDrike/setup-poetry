@@ -27,7 +27,7 @@ inputs:
     required: true
     default: "true"
 
-  cache-poetry-environemnt:
+  cache-poetry-environment:
     description: "Enable caching for poetry environments (venvs that contain the project's poetry dependencies)."
     required: true
     default: "true"
