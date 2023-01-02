@@ -158,7 +158,6 @@ runs:
       shell: bash
       run: |
         echo "::group::Add poetry executable(s) to PATH"
-        echo "test: ${{ steps.poetry_installation_cache.outputs.cache-hit }}"
         echo "Path to poetry binaries: ${{ inputs.poetry-home }}/bin"
         echo "${{ inputs.poetry-home }}/bin" >> $GITHUB_PATH
         echo "::endgroup::"
