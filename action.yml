@@ -10,7 +10,6 @@ inputs:
     description: "Poetry version to use (passed as `--version` argument to the official poetry install script)."
     required: true
     default: ""
-    # TODO: Check if this needs full version (1.3.1), or if it supports partial versions (1.3)
 
   install-args:
     description: "A string placed after the `poetry install` command, which can contain extra options."
@@ -36,10 +35,6 @@ inputs:
     description: "Directory to install the poetry tool into. (passed into the official poetry installer as `POETRY_HOME` env variable)."
     required: true
     default: "~/.local/share/pypoetry"
-
-  # TODO: venv in project, other poetry config options
-  # TODO: Handle dependencies cache manually, like with installation cache
-  # to allow restorations even if later user code fails
 
 outputs:
   poetry-venv-path:
