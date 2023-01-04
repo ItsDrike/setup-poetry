@@ -78,7 +78,7 @@ runs:
       id: installation_poetry_version
       run: |
         echo "::group::Determine poetry version to be installed"
-        if [ "${{ inputs.poetry_version }}" = "" ]; then
+        if [ "${{ inputs.poetry-version }}" = "" ]; then
           echo "Obtaining latest version from PyPI"
 
           # Obtain the latest non pre-release version of poetry from PyPI's API
