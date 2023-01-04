@@ -47,7 +47,7 @@ outputs:
 
   poetry-version:
     description: "The version of poetry installed"
-    value: ${{ steps.installed_poetry_version.poetry-version }}
+    value: ${{ steps.installed_poetry_version.outputs.poetry-version }}
 
   python-path:
     description: "Path to the python interpreter (forwarded from `actions/setup-python` action)."
