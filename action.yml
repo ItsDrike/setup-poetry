@@ -37,6 +37,10 @@ inputs:
     default: "~/.local/share/pypoetry"
 
 outputs:
+  poetry-version:
+    description: "The version of poetry installed"
+    value: ${{ steps.installed_poetry_version.outputs.poetry-version }}
+
   poetry-venv-path:
     description: "Path to the virtual environment created by poetry for the project."
     value: ${{ steps.poetry_environment.venv-path }}
@@ -44,10 +48,6 @@ outputs:
   python-version:
     description: "The python version used (forwarded from `actions/setup-python` action)."
     value: ${{ steps.python_setup.outputs.python-version }}
-
-  poetry-version:
-    description: "The version of poetry installed"
-    value: ${{ steps.installed_poetry_version.outputs.poetry-version }}
 
   python-path:
     description: "Path to the python interpreter (forwarded from `actions/setup-python` action)."

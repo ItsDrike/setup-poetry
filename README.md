@@ -55,9 +55,9 @@ The following outputs are produced by the action:
 
 | Name                         | Type   | Description                                                                    |
 |------------------------------|--------|--------------------------------------------------------------------------------|
+| poetry-version               | string | The version of poetry that was installed.                                      |
 | poetry-venv-path             | path   | Path to the virtual environment created by poetry for the project.             |
 | python-version               | string | The python version used (forwarded from `actions/setup-python` action).        |
-| poetry-version               | string | The version of poetry that was installed.                                      |
 | python-path                  | path   | Path to the python interpreter (forwarded from `actions/setup-python` action). |
 | cache-hit-poetry-install     | bool   | The was a cache hit for the poetry tool (installation) cache.                  |
 | cache-hit-poetry-environment | bool   | There was a cache hit for the poetry environment (dependencies) cache.         |
