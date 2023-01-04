@@ -67,6 +67,31 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
 
+    # We need to know what poetry version we'll be installing, so that we can construct
+    # a unique cache key based on it, which we need before the installation (for restore).
+    - name: Determine poetry version to be installed
+      shell: bash
+      id: installation_poetry_version
+      run: |
+        echo "::group::Determine poetry version to be installed"
+        if [ "${{ inputs.poetry_version }}" = "" ]; then
+          echo "Obtaining latest version from PyPI"
+
+          # Obtain the latest non pre-release version of poetry from PyPI's API
+          version="$(curl https://pypi.org/pypi/poetry/json |\
+                   jq --raw-output ".releases | keys[]" |\
+                   grep -E "^[0-9]+\.[0-9]+\.[0-9]+$" |\
+                   tail -n 1)"
+        else
+          echo "Using user-defined version"
+          version="${{ inputs.poetry-version }}"
+        fi
+
+        echo "version: $version"
+        echo "poetry-version=$version" >> $GITHUB_OUTPUT
+        echo "::endgroup::"
+
+
     - name: Cache poetry installation
       # We're using the cache restore only action, rather than full actions/cache, as we then explicitly
       # save this cache later, to save installation cache even if the dependency install fails.
@@ -79,24 +104,19 @@ runs:
         key: "setup-poetry-v1.0.0--cache-installation--\
               os-${{ runner.os }}--\
               python-${{ steps.python_setup.outputs.python-version }}--\
-              poetry-${{ inputs.poetry-version }}"
+              poetry-${{ steps.installation_poetry_version.outputs.poetry-version }}"
 
     - name: Install Poetry
       shell: bash
       # If cache was restored, the poetry install script will detect it, and will skip the installation
       # no need to add an if condition for running this step.
       run: |
-        echo "::group::Install Poetry (version: ${{ inputs.poetry-version }})"
-
-        if [ "${{ inputs.poetry-version }}" == "latest" ]; then
-          curl -sSL "https://install.python-poetry.org" | python - --yes
-        else
-          curl -sSL "https://install.python-poetry.org" | python - --yes --version "${{ inputs.poetry-version }}"
-        fi
-
+        echo "::group::Install Poetry (version: ${{ steps.installation_poetry_version.outputs.poetry-version }})"
+        curl -sSL "https://install.python-poetry.org" | python - --yes
         echo "::endgroup::"
       env:
         POETRY_HOME: ${{ inputs.poetry-home }}
+        POETRY_VERSION: ${{ steps.installation_poetry_version.outputs.poetry-version }}
 
     # Windows is just a big pile of bugs...
     #
@@ -213,14 +233,14 @@ runs:
         key: "setup-poetry-v1.0.0--cache-dependencies--\
               os-${{ runner.os }}--\
               python-${{ steps.python_setup.outputs.python-version }}--\
-              poetry-${{ inputs.poetry-version }}--\
+              poetry-${{ steps.installation_poetry_version.outputs.poetry-version }}--\
               args-${{ inputs.install-args }}--\
               workdir-${{ inputs.working-dir }}--\
               filehash-${{ hashFiles(format('{0}/pyproject.toml', inputs.working-dir), format('{0}/poetry.lock', inputs.working-dir)) }}"
         restore-keys: "setup-poetry-v1.0.0--cache-dependencies--\
                         os-${{ runner.os }}--\
                         python-${{ steps.python_setup.outputs.python-version }}--\
-                        poetry-${{ inputs.poetry-version }}--\
+                        poetry-${{ steps.installation_poetry_version.outputs.poetry-version }}--\
                         args-${{ inputs.install-args }}--\
                         workdir-${{ inputs.working-dir }}--"
 
