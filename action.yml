@@ -187,6 +187,7 @@ runs:
       run: |
         echo "::group::Obtain poetry version"
         version="$(poetry --version | awk '{print $3}' | sed 's/.$//')"
+        echo "Detected installed poetry version: $version"
         echo "poetry-version=$version" >> $GITHUB_OUTPUT
         echo "::endgroup::"
 
