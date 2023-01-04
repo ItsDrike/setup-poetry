@@ -43,7 +43,7 @@ outputs:
 
   poetry-venv-path:
     description: "Path to the virtual environment created by poetry for the project."
-    value: ${{ steps.poetry_environment.venv-path }}
+    value: ${{ steps.poetry_environment.outputs.venv-path }}
 
   python-version:
     description: "The python version used (forwarded from `actions/setup-python` action)."
@@ -55,11 +55,11 @@ outputs:
 
   cache-hit-poetry-install:
     description: "The was a cache hit for the poetry tool (installation) cache."
-    value: ${{ steps.poetry_installation_cache.cache-hit }}
+    value: ${{ steps.poetry_installation_cache.outputs.cache-hit }}
 
   cache-hit-poetry-environment:
     description: "There was a cache hit for the poetry environment (dependencies) cache."
-    value: ${{ steps.poetry_dependencies_cache.cache-hit }}
+    value: ${{ steps.poetry_dependencies_cache.outputs.cache-hit }}
 
 runs:
   using: "composite"
