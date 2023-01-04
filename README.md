@@ -38,15 +38,15 @@ liking unix paths in $PATH. This is something that is being worked on, and shoul
 ### Inputs
 
 The following inputs can be passed to
-| Name                     | Type   | Default                   | Description                                                                                                           |
-|--------------------------|--------|---------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| python-version           | string |                           | The version of python to use (passed into `actions/setup-python` action).                                             |
-| poetry-version           | string |                           | Poetry version to use (passed as `--version` argument to the [official poetry install script][poetry-installer-docs]. |
-| install-args             | string |                           | A string placed after the `poetry install` command, which can contain extra options.                                  |
-| working-dir              | path   | `.`                       | The directory to run the `poetry` commands in. By default, this will just be the root directory of the project.       |
-| cache-poetry-install     | bool   | true                      | Enable caching for poetry tool itself (not related to caching of the project's poetry dependencies).                  |
-| cache-poetry-environment | bool   | true                      | Enable caching for poetry environments (venvs that contain the project's poetry dependencies).                        |
-| poetry-home              | path   | `~/.local/share/pypoetry` | Directory to install the poetry tool into. (passed into the official poetry installer as `POETRY_HOME` env variable). |
+| Name                     | Type   | Default                   | Description                                                                                                                |
+|--------------------------|--------|---------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| python-version           | string |                           | The version of python to use (passed into `actions/setup-python` action).                                                  |
+| poetry-version           | string |                           | Poetry version to use (passed as `--version` argument to the [official poetry install script][1]). Leave blank for latest. |
+| install-args             | string |                           | A string placed after the `poetry install` command, which can contain extra options.                                       |
+| working-dir              | path   | `.`                       | The directory to run the `poetry` commands in. By default, this will just be the root directory of the project.            |
+| cache-poetry-install     | bool   | true                      | Enable caching for poetry tool itself (not related to caching of the project's poetry dependencies).                       |
+| cache-poetry-environment | bool   | true                      | Enable caching for poetry environments (venvs that contain the project's poetry dependencies).                             |
+| poetry-home              | path   | `~/.local/share/pypoetry` | Directory to install the poetry tool into. (passed into the official poetry installer as `POETRY_HOME` env variable).      |
 
 
 ### Outputs
@@ -63,4 +63,4 @@ The following outputs are produced by the action:
 | cache-hit-poetry-environment | bool   | There was a cache hit for the poetry environment (dependencies) cache.         |
 
 
-[poetry-installer-docs]: https://python-poetry.org/docs/#installing-with-the-official-installer
+[1]: https://python-poetry.org/docs/#installing-with-the-official-installer

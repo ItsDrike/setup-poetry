@@ -7,7 +7,7 @@ inputs:
     required: true
 
   poetry-version:
-    description: "Poetry version to use (passed as `--version` argument to the official poetry install script)."
+    description: "Poetry version to use (passed as `--version` argument to the official poetry install script). Leave blank for latest."
     required: true
     default: ""
 
