@@ -45,6 +45,10 @@ outputs:
     description: "The python version used (forwarded from `actions/setup-python` action)."
     value: ${{ steps.python_setup.outputs.python-version }}
 
+  poetry-version:
+    description: "The version of poetry installed"
+    value: ${{ steps.installed_poetry_version.poetry-version }}
+
   python-path:
     description: "Path to the python interpreter (forwarded from `actions/setup-python` action)."
     value: ${{ steps.python_setup.outputs.python-path }}
@@ -177,11 +181,13 @@ runs:
         echo "${{ inputs.poetry-home }}/bin" >> $GITHUB_PATH
         echo "::endgroup::"
 
-    - name: Test poetry installation
+    - name: Obtain poetry version
       shell: bash
+      id: installed_poetry_version
       run: |
-        echo "::group::Test poetry installation"
-        poetry --version
+        echo "::group::Obtain poetry version"
+        version="$(poetry --version | awk '{print $3}' | sed 's/.$//')"
+        echo "poetry-version=$version" >> $GITHUB_OUTPUT
         echo "::endgroup::"
 
     # Sometimes, poetry might get installed properly, while the dependency installation later fails.
@@ -233,14 +239,14 @@ runs:
         key: "setup-poetry-v1.0.0--cache-dependencies--\
               os-${{ runner.os }}--\
               python-${{ steps.python_setup.outputs.python-version }}--\
-              poetry-${{ steps.installation_poetry_version.outputs.poetry-version }}--\
+              poetry-${{ steps.installed_poetry_version.outputs.poetry-version }}--\
               args-${{ inputs.install-args }}--\
               workdir-${{ inputs.working-dir }}--\
               filehash-${{ hashFiles(format('{0}/pyproject.toml', inputs.working-dir), format('{0}/poetry.lock', inputs.working-dir)) }}"
         restore-keys: "setup-poetry-v1.0.0--cache-dependencies--\
                         os-${{ runner.os }}--\
                         python-${{ steps.python_setup.outputs.python-version }}--\
-                        poetry-${{ steps.installation_poetry_version.outputs.poetry-version }}--\
+                        poetry-${{ steps.installed_poetry_version.outputs.poetry-version }}--\
                         args-${{ inputs.install-args }}--\
                         workdir-${{ inputs.working-dir }}--"
 
