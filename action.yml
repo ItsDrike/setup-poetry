@@ -214,7 +214,7 @@ runs:
 
     - name: Cache poetry dependencies
       if: ${{ inputs.cache-poetry-environment == 'true' }}
-      uses: actions/cache@v3
+      uses: actions/cache/restore@v3
       id: poetry_dependencies_cache
       with:
         # Cache poetry cache-dir, where virtual environments get created by default.
@@ -268,6 +268,20 @@ runs:
         cd ${{ inputs.working-dir }}
         poetry install ${{ inputs.install-args }}
         echo "::endgroup::"
+
+    - name: Save poetry dependencies cache early
+      # Cache-hit is only true if the primary key was matched, not if there was a restore-key match.
+      # That means we can use it to skip the save step if we know the primary key was matched, as
+      # nothing has changed. But if one of the restore keys was matched, or there wasn't a hit at all,
+      # we do want to save a new cache under the primary key.
+      if: ${{ steps.poetry_dependencies_cache.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          ${{ steps.poetry_cache_dir.outputs.cache-dir }}
+          ${{ inputs.working-dir }}/.venv
+        key: ${{ steps.poetry_dependencies_cache.outputs.cache-primary-key }}
+
 
     - name: Add poetry venv binaries to path
       shell: bash
