@@ -267,7 +267,7 @@ runs:
       run: |
         echo "::group::Install Dependencies"
         cd ${{ inputs.working-dir }}
-        poetry install ${{ inputs.install-args }}
+        poetry install --sync ${{ inputs.install-args }}
         echo "::endgroup::"
 
     - name: Save poetry dependencies cache early
