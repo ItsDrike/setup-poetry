@@ -103,7 +103,9 @@ runs:
       run: |
         echo "::group::Hash poetry install arguments"
         echo "Passed install args: ${{ inputs.install-args }}"
-        hashed_args=$(echo -n "${{ inputs.install-args }}" | sha256sum | cut -d" " -f1)
+        # Macos doesn't have sha256sum command, use openssl command
+        function sha256sum() { openssl sha256 "$@" | awk '{print $2}'; }
+        hashed_args=$(echo -n "${{ inputs.install-args }}" | sha256sum)
         echo "Resulting hash: $hashed_args"
         echo "install-args-hash=$hashed_args" >> $GITHUB_OUTPUT
         echo "::endgroup::"
