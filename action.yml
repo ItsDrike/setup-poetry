@@ -120,9 +120,9 @@ runs:
         path: |
           ${{ inputs.poetry-home }}
         key: "setup-poetry-v1.0.0--cache-installation--\
-              os-${{ runner.os }}--\
-              python-${{ steps.python_setup.outputs.python-version }}--\
-              poetry-${{ steps.installation_poetry_version.outputs.poetry-version }}"
+          os-${{ runner.os }}--\
+          python-${{ steps.python_setup.outputs.python-version }}--\
+          poetry-${{ steps.installation_poetry_version.outputs.poetry-version }}"
 
     - name: Install Poetry
       shell: bash
@@ -138,7 +138,7 @@ runs:
 
     # Windows is just a big pile of bugs...
     #
-    # Poetry installation in windows symlinks ${{ inputs.poetry-home }}/bin/poetry.exe to 
+    # Poetry installation in windows symlinks ${{ inputs.poetry-home }}/bin/poetry.exe to
     # {{ inputs.poetry-version }}/venv/Scripts/poetry.exe, however in some cases, this just deosn't work properly
     # after a cache restore.
     #
@@ -244,7 +244,7 @@ runs:
         #
         # For these cases, we can actually still perform a cache restore, even if the key doesn't match, as long as
         # that cache comes from a compatible version (ensured by a match on a restore-key). That way, poetry will just
-        # have to install the missing packages, or update/remove some packages, but all other dependencies will still 
+        # have to install the missing packages, or update/remove some packages, but all other dependencies will still
         # be cached.
         #
         # After that, new cache will still get created, with an appropriate restore key, so next time when this same
@@ -252,18 +252,18 @@ runs:
         #
         # See: https://github.com/actions/cache/blob/main/tips-and-workarounds.md#update-a-cache
         key: "setup-poetry-v1.0.0--cache-dependencies--\
-              os-${{ runner.os }}--\
-              python-${{ steps.python_setup.outputs.python-version }}--\
-              poetry-${{ steps.installed_poetry_version.outputs.poetry-version }}--\
-              args-${{ steps.install_args_hash.outputs.install-args-hash }}--\
-              workdir-${{ inputs.working-dir }}--\
-              filehash-${{ hashFiles(format('{0}/pyproject.toml', inputs.working-dir), format('{0}/poetry.lock', inputs.working-dir)) }}"
+          os-${{ runner.os }}--\
+          python-${{ steps.python_setup.outputs.python-version }}--\
+          poetry-${{ steps.installed_poetry_version.outputs.poetry-version }}--\
+          args-${{ steps.install_args_hash.outputs.install-args-hash }}--\
+          workdir-${{ inputs.working-dir }}--\
+          filehash-${{ hashFiles(format('{0}/pyproject.toml', inputs.working-dir), format('{0}/poetry.lock', inputs.working-dir)) }}"
         restore-keys: "setup-poetry-v1.0.0--cache-dependencies--\
-                        os-${{ runner.os }}--\
-                        python-${{ steps.python_setup.outputs.python-version }}--\
-                        poetry-${{ steps.installed_poetry_version.outputs.poetry-version }}--\
-                        args-${{ steps.install_args_hash.outputs.install-args-hash }}--\
-                        workdir-${{ inputs.working-dir }}--"
+          os-${{ runner.os }}--\
+          python-${{ steps.python_setup.outputs.python-version }}--\
+          poetry-${{ steps.installed_poetry_version.outputs.poetry-version }}--\
+          args-${{ steps.install_args_hash.outputs.install-args-hash }}--\
+          workdir-${{ inputs.working-dir }}--"
 
     - name: Create poetry environment for the project
       id: poetry_environment
@@ -296,7 +296,6 @@ runs:
           ${{ steps.poetry_cache_dir.outputs.cache-dir }}
           ${{ inputs.working-dir }}/.venv
         key: ${{ steps.poetry_dependencies_cache.outputs.cache-primary-key }}
-
 
     - name: Add poetry venv binaries to path
       shell: bash
