@@ -303,6 +303,5 @@ runs:
         echo "::group::Add venv to PATH"
         cd ${{ inputs.working-dir }}
         echo "Adding $(poetry env info --path)/bin to path"
-        cd ${{ inputs.working-dir }}
         echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
         echo "::endgroup::"
