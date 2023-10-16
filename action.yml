@@ -191,8 +191,10 @@ runs:
       shell: bash
       run: |
         echo "::group::Add poetry executable(s) to PATH"
-        echo "Path to poetry binaries: ${{ inputs.poetry-home }}/bin"
-        echo "${{ inputs.poetry-home }}/bin" >> $GITHUB_PATH
+        poetry_home="${{ inputs.poetry-home }}"
+        absolute_poetry_home="${poetry_home/#\~/$HOME}"
+        echo "Path to poetry binaries: ${{ absolute_poetry_home }}/bin"
+        echo "${{ absolute_poetry_home }}/bin" >> $GITHUB_PATH
         echo "::endgroup::"
 
     - name: Obtain poetry version
