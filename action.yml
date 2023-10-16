@@ -193,8 +193,8 @@ runs:
         echo "::group::Add poetry executable(s) to PATH"
         poetry_home="${{ inputs.poetry-home }}"
         absolute_poetry_home="${poetry_home/#\~/$HOME}"
-        echo "Path to poetry binaries: ${{ absolute_poetry_home }}/bin"
-        echo "${{ absolute_poetry_home }}/bin" >> $GITHUB_PATH
+        echo "Path to poetry binaries: ${absolute_poetry_home}/bin"
+        echo "${absolute_poetry_home}/bin" >> $GITHUB_PATH
         echo "::endgroup::"
 
     - name: Obtain poetry version
